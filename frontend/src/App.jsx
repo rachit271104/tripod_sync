@@ -1,78 +1,91 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
 const socket = io("http://localhost:5000");
 
 function App() {
-  const [roomId, setRoomId] = useState("");
-  const [joined, setJoined] = useState(false);
   const videoRef = useRef(null);
+  const roomId = "q0s4i6"; // 👈 use same room as your backend logs
 
-  const handleJoin = () => {
-    if (!roomId) return alert("Enter room ID");
-    socket.emit("join-room", roomId);
-    setJoined(true);
-  };
+  // Prevents feedback loop (when we play from socket, don't re-emit)
+  const isRemoteAction = useRef(false);
 
   useEffect(() => {
-    const video = videoRef.current;
+    // Join room
+    socket.emit("join-room", roomId);
+    console.log("🟢 Joined room:", roomId);
 
+    // When PLAY is received from other user
     socket.on("play", (time) => {
-      if (video.paused) {
-        video.currentTime = time;
-        video.play();
-      }
+      console.log("▶️ Received PLAY:", time);
+      const video = videoRef.current;
+      if (!video) return;
+
+      isRemoteAction.current = true;
+      video.currentTime = time;
+      video.play().catch((err) => console.warn("⚠️ Play blocked:", err));
+      setTimeout(() => (isRemoteAction.current = false), 500);
     });
 
+    // When PAUSE is received from other user
     socket.on("pause", (time) => {
+      console.log("⏸ Received PAUSE:", time);
+      const video = videoRef.current;
+      if (!video) return;
+
+      isRemoteAction.current = true;
       video.currentTime = time;
       video.pause();
+      setTimeout(() => (isRemoteAction.current = false), 500);
     });
 
+    // When SEEK is received from other user
     socket.on("seek", (time) => {
+      console.log("⏩ Received SEEK:", time);
+      const video = videoRef.current;
+      if (!video) return;
+
+      isRemoteAction.current = true;
       video.currentTime = time;
+      setTimeout(() => (isRemoteAction.current = false), 500);
     });
   }, []);
 
+  // Local event handlers
   const handlePlay = () => {
-    socket.emit("play", { roomId, time: videoRef.current.currentTime });
+    if (isRemoteAction.current) return;
+    const time = videoRef.current.currentTime;
+    socket.emit("play", { roomId, time });
+    console.log("▶️ Local play emitted:", time);
   };
 
   const handlePause = () => {
-    socket.emit("pause", { roomId, time: videoRef.current.currentTime });
+    if (isRemoteAction.current) return;
+    const time = videoRef.current.currentTime;
+    socket.emit("pause", { roomId, time });
+    console.log("⏸ Local pause emitted:", time);
   };
 
   const handleSeek = () => {
-    socket.emit("seek", { roomId, time: videoRef.current.currentTime });
+    if (isRemoteAction.current) return;
+    const time = videoRef.current.currentTime;
+    socket.emit("seek", { roomId, time });
+    console.log("⏩ Local seek emitted:", time);
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      {!joined ? (
-        <div>
-          <h2>Join a Room</h2>
-          <input
-            type="text"
-            placeholder="Enter room ID"
-            value={roomId}
-            onChange={(e) => setRoomId(e.target.value)}
-          />
-          <button onClick={handleJoin}>Join</button>
-        </div>
-      ) : (
-        <div>
-          <h2>Room: {roomId}</h2>
-          <video
-            ref={videoRef}
-            width="720"
-            controls
-            src="/sample.mp4"
-            onPlay={handlePlay}
-            onPause={handlePause}
-            onSeeked={handleSeek}
-          />
-        </div>
-      )}
+    <div style={{ textAlign: "center", marginTop: "20px" }}>
+      <h1>🎬 Tripod Sync — Room {roomId}</h1>
+      <video
+  ref={videoRef}
+  width="640"
+  controls
+  src="/sample.mp4"
+  onPlay={handlePlay}
+  onPause={handlePause}
+  onSeeked={handleSeek}
+/>
+
     </div>
   );
 }
