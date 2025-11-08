@@ -1,94 +1,37 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
-import io from "socket.io-client";
+import React from "react";
+import Navbar from "../components/Navbar";
+import SidebarLeft from "../components/SidebarLeft";
+import SidebarRight from "../components/SidebarRight";
+import VideoPlayer from "../components/VideoPlayer";
+import ChatBox from "../components/ChatBox";
 
-const socket = io("http://localhost:5000");
-
-export default function RoomPage() {
-  const { roomId } = useParams();
-  const videoRef = useRef(null);
-  const [videoFile, setVideoFile] = useState(null);
-  const [isReady, setIsReady] = useState(false);
-
-  // Join the room
-  useEffect(() => {
-    socket.emit("join-room", roomId);
-    console.log(`Joined room: ${roomId}`);
-
-    socket.on("play-video", (time) => {
-      const video = videoRef.current;
-      if (!video) return;
-      console.log("▶️ Received play at time:", time);
-
-      if (Math.abs(video.currentTime - time) > 0.5) {
-        video.currentTime = time;
-      }
-      video.play();
-    });
-
-    socket.on("pause-video", (time) => {
-      const video = videoRef.current;
-      if (!video) return;
-      console.log("⏸ Received pause at time:", time);
-
-      if (Math.abs(video.currentTime - time) > 0.5) {
-        video.currentTime = time;
-      }
-      video.pause();
-    });
-
-    return () => {
-      socket.off("play-video");
-      socket.off("pause-video");
-    };
-  }, [roomId]);
-
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const videoURL = URL.createObjectURL(file);
-      setVideoFile(videoURL);
-      setIsReady(true);
-    }
-  };
-
-  const handlePlay = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    console.log("▶️ Play pressed, sending time:", video.currentTime);
-    socket.emit("play-video", { roomId, time: video.currentTime });
-  };
-
-  const handlePause = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    console.log("⏸ Pause pressed, sending time:", video.currentTime);
-    socket.emit("pause-video", { roomId, time: video.currentTime });
-  };
-
+function RoomPage() {
   return (
-    <div className="p-4 text-center">
-      <h1 className="text-2xl font-semibold mb-4">
-        Room ID: <span className="text-blue-600">{roomId}</span>
-      </h1>
+    <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white min-h-screen flex flex-col">
+      {/* Navbar */}
+      <Navbar />
 
-      {!isReady ? (
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-lg">Upload your video file (.mp4 / .mkv):</p>
-          <input type="file" accept="video/*" onChange={handleFileUpload} />
+      {/* Main Layout */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Sidebar - Party Members */}
+        <SidebarLeft />
+
+        {/* Center Section */}
+        <div className="flex flex-col flex-1 overflow-hidden">
+          {/* Video Player */}
+          <div className="flex-1 flex items-center justify-center p-4">
+            <VideoPlayer />
+          </div>
+
+          {/* Live Chat (Collapsible) */}
+          <ChatBox />
         </div>
-      ) : (
-        <div className="flex flex-col items-center">
-          <video
-            ref={videoRef}
-            src={videoFile}
-            controls
-            width="720"
-            onPlay={handlePlay}
-            onPause={handlePause}
-          />
-        </div>
-      )}
+
+        {/* Right Sidebar - Friends’ Videos */}
+        <SidebarRight />
+      </div>
     </div>
   );
 }
+
+export default RoomPage;
