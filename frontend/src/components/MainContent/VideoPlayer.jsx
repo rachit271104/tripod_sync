@@ -1,32 +1,40 @@
 import React, { useEffect, useRef } from "react";
 import { Video } from "lucide-react";
-import { io } from "socket.io-client";
+import { socket } from "../../socket";
 
-const socket = io("http://10.35.113.75:5000"); // connect to backend
+
+
 
 export default function VideoPlayer({ selectedFile, setSelectedFile }) {
   const videoRef = useRef(null);
-  const roomId = "tripod-test-room"; // temporary static room
-  const isAdmin = true; // for now, assume first tab is admin
+
+  // ✅ Load from localStorage (set during create/join)
+  const roomId = localStorage.getItem("roomId");
+  const isAdmin = localStorage.getItem("isAdmin") === "true";
 
   useEffect(() => {
-    // join the room
+    if (!roomId) {
+      console.warn("⚠️ No roomId found in localStorage.");
+      return;
+    }
+
+    // join the correct room
     socket.emit("join-room", roomId);
 
-    // handle updates from admin (play/pause/seek)
+    // listen for video updates from backend
     socket.on("video-update", ({ currentTime, isPlaying }) => {
       const video = videoRef.current;
       if (!video) return;
 
-      // Sync the playback time
+      // Sync time
       video.currentTime = currentTime;
 
-      // Play or pause depending on admin state
+      // Play or pause
       if (isPlaying) video.play();
       else video.pause();
     });
 
-    // handle initial sync for new users joining late
+    // handle sync when new user joins
     socket.on("sync-video", ({ currentTime, isPlaying }) => {
       const video = videoRef.current;
       if (!video) return;
@@ -41,28 +49,35 @@ export default function VideoPlayer({ selectedFile, setSelectedFile }) {
       socket.off("video-update");
       socket.off("sync-video");
     };
-  }, []);
+  }, [roomId]);
 
-  // when admin plays video
+  // ✅ Send admin updates
   const handlePlay = () => {
-    if (isAdmin) {
-      const currentTime = videoRef.current.currentTime;
+    if (isAdmin && videoRef.current) {
       socket.emit("admin-update", {
         roomId,
-        currentTime,
+        currentTime: videoRef.current.currentTime,
         isPlaying: true,
       });
     }
   };
 
-  // when admin pauses video
   const handlePause = () => {
-    if (isAdmin) {
-      const currentTime = videoRef.current.currentTime;
+    if (isAdmin && videoRef.current) {
       socket.emit("admin-update", {
         roomId,
-        currentTime,
+        currentTime: videoRef.current.currentTime,
         isPlaying: false,
+      });
+    }
+  };
+
+  const handleSeeked = () => {
+    if (isAdmin && videoRef.current) {
+      socket.emit("admin-update", {
+        roomId,
+        currentTime: videoRef.current.currentTime,
+        isPlaying: !videoRef.current.paused,
       });
     }
   };
@@ -77,6 +92,7 @@ export default function VideoPlayer({ selectedFile, setSelectedFile }) {
           controls
           onPlay={handlePlay}
           onPause={handlePause}
+          onSeeked={handleSeeked}
         />
       ) : (
         <div className="w-full h-full flex flex-col items-center justify-center">

@@ -1,21 +1,57 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { socket } from "../socket"; // ✅ shared socket instance (no reconnects)
 
 function HomePage() {
   const navigate = useNavigate();
-  const [roomCode, setRoomCode] = useState("");
+  const [partyLink, setPartyLink] = useState("");
 
-  // Generate a random room ID
+  // ✅ Create new party (admin flow)
   const handleCreateParty = () => {
-    const randomId = Math.random().toString(36).substring(2, 8);
-    navigate(`/room/${randomId}`);
+    console.log("🟢 Creating new room...");
+    socket.emit("create-room");
+
+    // Wait for server confirmation before navigating
+    socket.once("room-created", (roomId) => {
+      console.log("✅ Room created:", roomId);
+
+      // Store room info locally
+      localStorage.setItem("roomId", roomId);
+      localStorage.setItem("isAdmin", "true");
+
+      // Navigate after confirmation (same socket connection)
+      navigate("/room");
+    });
   };
 
+  // ✅ Join existing party (guest flow)
   const handleJoinParty = () => {
-    if (roomCode.trim() !== "") {
-      navigate(`/room/${roomCode}`);
+    try {
+      const url = new URL(partyLink);
+      const code = url.searchParams.get("party");
+
+      if (code) {
+        localStorage.setItem("roomId", code);
+        localStorage.setItem("isAdmin", "false");
+        navigate("/room");
+      } else {
+        alert("Invalid link! Make sure it contains '?party=ROOMCODE'");
+      }
+    } catch {
+      alert("Please paste a valid Tripod Sync link.");
     }
   };
+
+//temperary
+useEffect(() => {
+  socket.on("connect", () => {
+    console.log("🟢 Connected socket ID (Home):", socket.id);
+  });
+
+  return () => socket.off("connect");
+}, []);
+
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-900 text-white">
@@ -50,9 +86,9 @@ function HomePage() {
           <div className="flex items-center gap-2">
             <input
               type="text"
-              placeholder="Enter Party Code"
-              value={roomCode}
-              onChange={(e) => setRoomCode(e.target.value)}
+              placeholder="Paste party link"
+              value={partyLink}
+              onChange={(e) => setPartyLink(e.target.value)}
               className="bg-gray-800 text-gray-200 placeholder-gray-400 border border-gray-600 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
@@ -70,8 +106,10 @@ function HomePage() {
             How Tripod Sync Works
           </h3>
           <p>
-            1️⃣ Create a private room and invite your friends using a shareable link.  
-            2️⃣ Everyone loads the same movie file from their device.  
+            1️⃣ Create a private room and invite your friends using a shareable link.
+            <br />
+            2️⃣ Everyone loads the same movie file from their device.
+            <br />
             3️⃣ Any play, pause, or seek action stays in perfect sync for all users!
           </p>
           <p className="italic">
@@ -82,7 +120,7 @@ function HomePage() {
 
       {/* Footer */}
       <footer className="text-center py-4 text-gray-500 text-sm border-t border-gray-800">
-        © {new Date().getFullYear()} Tripod Sync | Made with ❤️ 
+        © {new Date().getFullYear()} Tripod Sync | Made with ❤️
       </footer>
     </div>
   );
