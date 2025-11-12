@@ -1,29 +1,37 @@
-import React from "react";
-import Navbar from "../components/Navbar";
-import SidebarLeft from "../components/SidebarLeft";
-import SidebarRight from "../components/SidebarRight";
-import VideoPlayer from "../components/VideoPlayer";
-import ChatBox from "../components/ChatBox";
+import React, { useState } from "react";
+import SidebarLeft from "../components/Sidebar/Sidebar";
+import SidebarRight from "../components/RightSidebar/RightSidebar";
+import VideoPlayer from "../components/MainContent/VideoPlayer";
+import VideoControls from "../components/MainContent/VideoControls";
 
-const RoomPage = () => {
+function RoomPage() {
   return (
-    <div className="h-screen w-full bg-[#0e0e10] text-white flex flex-col">
-      {/* Top Navbar */}
+    <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white min-h-screen flex flex-col">
+      {/* Navbar */}
       <Navbar />
 
-      <div className="flex flex-1">
-        {/* Left Sidebar */}
+      {/* Main Layout */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Sidebar - Party Members */}
         <SidebarLeft />
 
-        {/* Middle Section */}
-        <div className="flex-1 flex flex-col items-center justify-center p-4">
-          <VideoPlayer />
+        {/* Center Section */}
+        <div className="flex flex-col flex-1 overflow-hidden">
+          {/* Video Player */}
+          <div className="flex-1 flex items-center justify-center p-4">
+            <VideoPlayer />
+          </div>
+
+          {/* Live Chat (Collapsible) */}
           <ChatBox />
         </div>
 
-        {/* Right Sidebar */}
+        {/* Right Sidebar - Friends’ Videos */}
         <SidebarRight />
       </div>
+
+      {/* 👥 Right Sidebar (Member Video Grid) */}
+      <SidebarRight members={members} />
     </div>
   );
 };
