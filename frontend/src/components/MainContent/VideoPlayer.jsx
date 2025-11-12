@@ -1,13 +1,83 @@
-import React from 'react';
-import { Video } from 'lucide-react';
+import React, { useEffect, useRef } from "react";
+import { Video } from "lucide-react";
+import { io } from "socket.io-client";
+
+const socket = io("http://10.35.113.75:5000"); // connect to backend
 
 export default function VideoPlayer({ selectedFile, setSelectedFile }) {
+  const videoRef = useRef(null);
+  const roomId = "tripod-test-room"; // temporary static room
+  const isAdmin = true; // for now, assume first tab is admin
+
+  useEffect(() => {
+    // join the room
+    socket.emit("join-room", roomId);
+
+    // handle updates from admin (play/pause/seek)
+    socket.on("video-update", ({ currentTime, isPlaying }) => {
+      const video = videoRef.current;
+      if (!video) return;
+
+      // Sync the playback time
+      video.currentTime = currentTime;
+
+      // Play or pause depending on admin state
+      if (isPlaying) video.play();
+      else video.pause();
+    });
+
+    // handle initial sync for new users joining late
+    socket.on("sync-video", ({ currentTime, isPlaying }) => {
+      const video = videoRef.current;
+      if (!video) return;
+
+      video.currentTime = currentTime;
+
+      if (isPlaying) video.play();
+      else video.pause();
+    });
+
+    return () => {
+      socket.off("video-update");
+      socket.off("sync-video");
+    };
+  }, []);
+
+  // when admin plays video
+  const handlePlay = () => {
+    if (isAdmin) {
+      const currentTime = videoRef.current.currentTime;
+      socket.emit("admin-update", {
+        roomId,
+        currentTime,
+        isPlaying: true,
+      });
+    }
+  };
+
+  // when admin pauses video
+  const handlePause = () => {
+    if (isAdmin) {
+      const currentTime = videoRef.current.currentTime;
+      socket.emit("admin-update", {
+        roomId,
+        currentTime,
+        isPlaying: false,
+      });
+    }
+  };
+
   return (
     <div className="aspect-video bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800">
       {selectedFile ? (
-        <video className="w-full h-full bg-black" controls src={selectedFile}>
-          Your browser does not support the video tag.
-        </video>
+        <video
+          ref={videoRef}
+          className="w-full h-full bg-black"
+          src={selectedFile}
+          controls
+          onPlay={handlePlay}
+          onPause={handlePause}
+        />
       ) : (
         <div className="w-full h-full flex flex-col items-center justify-center">
           <Video size={48} className="text-zinc-700 mb-4" />
