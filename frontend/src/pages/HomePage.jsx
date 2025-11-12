@@ -30,7 +30,7 @@ function HomePage() {
       {/* Hero Section */}
       <main className="flex flex-col flex-1 items-center justify-center text-center px-6">
         <h2 className="text-4xl md:text-5xl font-bold mb-6">
-          Watch Offline Movies <span className="text-blue-400">Together</span>
+          Watch Movies <span className="text-blue-400">Together</span>
         </h2>
 
         <p className="max-w-xl text-gray-300 mb-8">

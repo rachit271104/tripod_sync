@@ -5,33 +5,27 @@ import SidebarRight from "../components/SidebarRight";
 import VideoPlayer from "../components/VideoPlayer";
 import ChatBox from "../components/ChatBox";
 
-function RoomPage() {
+const RoomPage = () => {
   return (
-    <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white min-h-screen flex flex-col">
-      {/* Navbar */}
+    <div className="h-screen w-full bg-[#0e0e10] text-white flex flex-col">
+      {/* Top Navbar */}
       <Navbar />
 
-      {/* Main Layout */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left Sidebar - Party Members */}
+      <div className="flex flex-1">
+        {/* Left Sidebar */}
         <SidebarLeft />
 
-        {/* Center Section */}
-        <div className="flex flex-col flex-1 overflow-hidden">
-          {/* Video Player */}
-          <div className="flex-1 flex items-center justify-center p-4">
-            <VideoPlayer />
-          </div>
-
-          {/* Live Chat (Collapsible) */}
+        {/* Middle Section */}
+        <div className="flex-1 flex flex-col items-center justify-center p-4">
+          <VideoPlayer />
           <ChatBox />
         </div>
 
-        {/* Right Sidebar - Friends’ Videos */}
+        {/* Right Sidebar */}
         <SidebarRight />
       </div>
     </div>
   );
-}
+};
 
 export default RoomPage;

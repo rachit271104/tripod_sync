@@ -1,23 +1,22 @@
 import React from "react";
+import { Share2, MoreHorizontal } from "lucide-react";
 
-function Navbar() {
+const Navbar = () => {
   return (
-    <nav className="flex justify-between items-center bg-gray-800 px-6 py-3 shadow-md border-b border-gray-700">
-      <h1 className="text-xl font-bold text-blue-400">🎬 Tripod Sync</h1>
-
-      <div className="flex gap-3">
-        <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm">
-          Invite Link
+    <nav className="w-full h-14 bg-[#16181d] flex justify-between items-center px-6 border-b border-gray-700 shadow-lg">
+      <h1 className="text-xl font-semibold text-gray-200">🎬 Watch Party</h1>
+      <div className="flex items-center gap-4">
+        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md flex items-center gap-2 transition">
+          <Share2 className="w-4 h-4" />
+          Share Link
         </button>
-        <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md text-sm">
-          Scribble
-        </button>
-        <button className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm">
+        <button className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-1.5 rounded-md flex items-center gap-2 transition">
+          <MoreHorizontal className="w-4 h-4" />
           More
         </button>
       </div>
     </nav>
   );
-}
+};
 
 export default Navbar;

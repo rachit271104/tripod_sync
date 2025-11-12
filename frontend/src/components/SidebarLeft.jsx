@@ -1,60 +1,55 @@
 import React from "react";
-import { Users, Video, MessageCircle, Settings, LogOut, User } from "lucide-react";
+import { Users, Video, MessageSquare, Settings } from "lucide-react";
 
-function SidebarLeft() {
-    return (
-        <aside className="group h-screen w-20 hover:w-64 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 transition-all duration-300 rounded-r-3xl p-5 flex flex-col justify-between text-white shadow-2xl border-r border-blue-500/20 overflow-hidden">
+const members = [
+  { name: "You", status: "online" },
+  { name: "Alex Chen", status: "online" },
+  { name: "Sarah Kim", status: "online" },
+  { name: "Mike Ross", status: "away" },
+];
 
-            {/* Top Section */}
-            <div className="flex flex-col items-center gap-6">
-                <h1 className="font-bold text-xl hidden group-hover:block text-blue-400">
-                    Tripod
-                </h1>
+const SidebarLeft = () => {
+  return (
+    <aside className="w-60 bg-[#16181d] border-r border-gray-700 flex flex-col justify-between p-4">
+      <div>
+        <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
+          <Users className="w-5 h-5 text-blue-400" /> Members
+        </h2>
 
-                <div className="flex flex-col gap-4 mt-10 w-full">
-                    <SidebarItem icon={<Users />} label="Members" active />
-                    <SidebarItem icon={<Video />} label="Video" />
-                    <SidebarItem icon={<MessageCircle />} label="Chat" />
-                </div>
-            </div>
+        <ul className="flex flex-col gap-3">
+          {members.map((m, i) => (
+            <li
+              key={i}
+              className="flex items-center gap-3 text-gray-300 hover:bg-gray-800 px-3 py-2 rounded-md cursor-pointer transition"
+            >
+              <div className="relative">
+                <img
+                  src={`https://i.pravatar.cc/40?img=${i + 1}`}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+                <span
+                  className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-gray-900 ${
+                    m.status === "online"
+                      ? "bg-green-500"
+                      : m.status === "away"
+                      ? "bg-yellow-500"
+                      : "bg-gray-500"
+                  }`}
+                ></span>
+              </div>
+              <span className="text-sm">{m.name}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
-            {/* Bottom Section */}
-            <div className="flex flex-col gap-4 items-center w-full">
-                {/* My Profile */}
-                <div className="flex items-center gap-3 w-full cursor-pointer group/profile transition-all duration-300">
-                    {/* Profile Picture */}
-                    <div className="w-9 h-9 rounded-full overflow-hidden border border-transparent group-hover/profile:border-blue-500 group-hover/profile:shadow-[0_0_8px_rgba(59,130,246,0.5)] flex-shrink-0 transition-all duration-300">
-                        <img
-                            src="../public/photoo.jpg"
-                            alt="Profile"
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
-
-                    {/* Name & Role (visible when expanded) */}
-                    <div className="hidden group-hover:block">
-                        <p className="text-sm font-medium text-white">Rachit Gupta</p>
-                        <p className="text-xs text-blue-400">Admin</p>
-                    </div>
-                </div>
-
-                <SidebarItem icon={<Settings />} label="Settings" />
-                <SidebarItem icon={<LogOut />} label="Logout" />
-            </div>
-        </aside>
-    );
-}
-
-const SidebarItem = ({ icon, label, active }) => (
-    <div
-        className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-300 w-full cursor-pointer ${active
-            ? "bg-blue-600/30 text-blue-400 border border-blue-500/20"
-            : "hover:bg-blue-600/10 text-gray-300 hover:text-blue-400"
-            }`}
-    >
-        <div className="w-6 h-6 flex items-center justify-center">{icon}</div>
-        <span className="hidden group-hover:block text-sm">{label}</span>
-    </div>
-);
+      <div className="border-t border-gray-700 pt-3">
+        <button className="flex items-center gap-3 text-gray-400 hover:text-blue-400 transition">
+          <Settings className="w-5 h-5" /> Settings
+        </button>
+      </div>
+    </aside>
+  );
+};
 
 export default SidebarLeft;

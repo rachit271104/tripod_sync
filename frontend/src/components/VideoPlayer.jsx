@@ -1,31 +1,16 @@
-import React, { useRef } from "react";
+import React from "react";
+import { VideoOff } from "lucide-react";
 
-function VideoPlayer() {
-  const videoRef = useRef(null);
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      videoRef.current.src = url;
-    }
-  };
-
+const VideoPlayer = () => {
   return (
-    <div className="flex flex-col items-center space-y-4">
-      <video
-        ref={videoRef}
-        controls
-        className="w-[80%] max-h-[70vh] rounded-lg border border-gray-700 shadow-md"
-      />
-      <input
-        type="file"
-        accept="video/*"
-        onChange={handleFileChange}
-        className="text-sm text-gray-300"
-      />
+    <div className="bg-[#1b1c22] rounded-lg w-[75%] h-[60vh] flex flex-col items-center justify-center border border-gray-700 shadow-lg">
+      <VideoOff className="w-12 h-12 text-gray-500 mb-3" />
+      <p className="text-gray-400 mb-4">No video selected</p>
+      <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md transition">
+        Choose Video
+      </button>
     </div>
   );
-}
+};
 
 export default VideoPlayer;
